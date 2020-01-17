@@ -7,7 +7,6 @@ module.exports = {
   // mode: 'development',
   entry: {
     main: './src/index.js',
-    experiment1:'./src/experiment1.js'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -24,7 +23,7 @@ module.exports = {
       },
       {
         test: /\.scss$/,
-        use:  [
+        use: [
           "style-loader",
           MiniCssExtractPlugin.loader,
           "css-loader",
@@ -43,12 +42,6 @@ module.exports = {
       chunks: ['index'],
       template: './src/index.html',
       filename: 'index.html'
-    }),
-    new HtmlWebpackPlugin({
-      inject: true,
-      chunks: ['experiment1'],
-      template: './src/experiment1.html',
-      filename: 'experiment1.html'
     }),
     new webpack.HotModuleReplacementPlugin()
   ],
