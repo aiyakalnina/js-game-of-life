@@ -9,13 +9,15 @@ let rowCount;
 let xClickPosition;
 let yClickPosition;
 let isSelectingOnDrag = false;
+const toolbarHeight = 70;
+let stepsAnimation;
 
 function resizeCanvas() {
   canvas = document.getElementById('canvas');
   canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.height = window.innerHeight - toolbarHeight;
   colCount = window.innerWidth / cellSize;
-  rowCount = window.innerHeight / cellSize;
+  rowCount = (window.innerHeight - toolbarHeight) / cellSize;
 }
 
 function createCells(ctx) {
@@ -27,6 +29,21 @@ function createCells(ctx) {
         x: j * cellSize,
         y: i * cellSize,
         radius: circleRadius,
+
+        // draw: function () {
+        //   ctx.beginPath();
+        //   ctx.fillRect(this.x + 1, this.y + 1, cellSize - 1, cellSize - 1);
+
+        //   ctx.fill();
+
+        //   if (this.isLive) {
+        //     ctx.fillStyle = '#2EC0F9';
+        //   }
+        //   else {
+        //     ctx.fillStyle = '#ffffff';
+        //   }
+        // }
+
         draw: function () {
           ctx.strokeStyle = '#2EC0F9';
           ctx.fillStyle = '#2EC0F9';
@@ -100,8 +117,10 @@ function findClickedCell() {
 function toggleCell(findClickedCell) {
   let selectedCellId = findClickedCell();
 
-  currentCellStates[selectedCellId].isLive = true;
-  cells[selectedCellId].isLive = true;
+  if (selectedCellId) {
+    currentCellStates[selectedCellId].isLive = true;
+    cells[selectedCellId].isLive = true;
+  }
 
   // toggle - works weirdly in conjunction with drag select
   // if (selectedCellId) {
@@ -170,27 +189,66 @@ function handleMouseDrag() {
 }
 
 function handleNextStep() {
+  currentCellStates.forEach((currentCell, index) => {
+
+    currentCell.neighbourCount = countLiveNeighbours(currentCell);
+
+    if (currentCell.isLive) {
+      if (currentCell.neighbourCount < 2 || currentCell.neighbourCount > 3) {
+        cells[index].isLive = false;
+      }
+    }
+
+    if (!currentCell.isLive && (currentCell.neighbourCount === 3)) {
+      cells[index].isLive = true;
+    }
+  });
+
+  render();
+  resetCurrentCellStates();
+}
+
+function onNextStep() {
+  const nextStepButton = document.getElementById('nextBtn');
+
+  nextStepButton.addEventListener('click', event => {
+    handleNextStep();
+  });
+
   document.addEventListener('keydown', event => {
     if (event.keyCode === 39) {
-
-      currentCellStates.forEach((currentCell, index) => {
-
-        currentCell.neighbourCount = countLiveNeighbours(currentCell);
-
-        if (currentCell.isLive) {
-          if (currentCell.neighbourCount < 2 || currentCell.neighbourCount > 3) {
-            cells[index].isLive = false;
-          }
-        }
-
-        if (!currentCell.isLive && (currentCell.neighbourCount === 3)) {
-          cells[index].isLive = true;
-        }
-      });
-
-      render();
-      resetCurrentCellStates();
+      handleNextStep();
     }
+  });
+}
+
+function onAutoPlay() {
+  const autoplayButton = document.getElementById('autoplayBtn');
+  let autoplayStart = null;
+
+  function step(timestamp) {
+    if (!autoplayStart) {
+      autoplayStart = timestamp
+    }
+    let progress = timestamp - autoplayStart;
+    handleNextStep();
+
+    stepsAnimation = window.requestAnimationFrame(step);
+    if (progress < 60000) {
+      stepsAnimation;
+    }
+  }
+
+  autoplayButton.addEventListener('click', event => {
+    window.requestAnimationFrame(step);
+  });
+}
+
+function onClear() {
+  const clearButton = document.getElementById('clearBtn');
+
+  clearButton.addEventListener('click', event => {
+    reset();
   });
 }
 
@@ -224,20 +282,30 @@ function countLiveNeighbours(thisCell) {
   return neighbourCount;
 }
 
+function reset() {
+  cells = [];
+  currentCellStates = [];
+  window.cancelAnimationFrame(stepsAnimation);
+  resizeCanvas();
+  init();
+}
+
 
 document.addEventListener('DOMContentLoaded', (e) => {
   resizeCanvas();
   init();
   handleClick();
   handleMouseDrag();
-  handleNextStep();
+  onNextStep();
+  onAutoPlay();
+  onClear();
 });
 
 // this doesn't work properly yet
-window.addEventListener('resize', (e) => {
-  cells = [];
-  currentCellStates = [];
-  resizeCanvas();
-  init();
-});
+// window.addEventListener('resize', (e) => {
+//   cells = [];
+//   currentCellStates = [];
+//   resizeCanvas();
+//   init();
+// });
 

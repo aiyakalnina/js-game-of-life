@@ -1,0 +1,33 @@
+.button {
+  border: none;
+  padding: 12px 20px;
+  margin: 0;
+  text-decoration: none;
+  background: #13467c;
+  color: #2EC0F9;
+  font-family: "Rubik", sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  cursor: pointer;
+  text-align: center;
+  transition: background 250ms ease-in-out, 
+              transform 150ms ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  margin-right: 10px;
+}
+
+.button:hover,
+.button:focus {
+  background: #DA4167;
+}
+
+.button:focus {
+  outline: none;
+  // outline-offset: -4px;
+}
+
+.button:active {
+  transform: scale(0.99);
+}
